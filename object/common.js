@@ -28,6 +28,11 @@ const student = {
   city: "Delhi"
 };
 
+// Check if Property Exists
+console.log("Property Exists","name" in student)
+// Remove a Property
+console.log("Remove a Property",delete student.age)
+
 for (let stu in student) {
   console.log(student[stu])
 }
@@ -43,3 +48,19 @@ for (let mark in marks) {
   sum = sum + marks[mark]
 }
 console.log(sum)
+
+// Merge Two Objects
+const obj1 = {
+  a: 1,
+  b: 2
+};
+
+const obj2 = {
+  c: 3,
+  d: 4
+};
+
+console.log({...obj,...obj2})
+
+// Clone an Object
+console.log("clone" , {...user})
