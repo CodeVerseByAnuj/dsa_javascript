@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JavaScript DSA Interview Tracker</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #687086;
+    --border: #e4e7ef;
+    --accent: #4f46e5;
+    --easy: #15803d;
+    --medium: #b45309;
+    --hard: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .container { max-width: 1200px; margin: auto; padding: 28px 20px 50px; }
+  header {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+    margin-bottom: 18px;
+  }
+  h1 { margin: 0 0 8px; font-size: 30px; }
+  .subtitle { margin: 0; color: var(--muted); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .stat {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    background: #fafbff;
+  }
+  .stat strong { display: block; font-size: 22px; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  input, select, button {
+    font: inherit;
+  }
+  input, select {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+  }
+  #search { flex: 1; min-width: 230px; }
+  button {
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  .reset { background: #e9eaf1; color: #303747; }
+  .section {
+    margin-top: 22px;
+    margin-bottom: 10px;
+    font-size: 20px;
+  }
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 820px; }
+  th, td {
+    text-align: left;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  th {
+    background: #fafbff;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  tr:last-child td { border-bottom: 0; }
+  tr.done { background: #f4fbf6; }
+  tr.done .question { text-decoration: line-through; color: #6b7280; }
+  .question { font-weight: 600; }
+  .difficulty {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .Easy { color: var(--easy); background: #dcfce7; }
+  .Medium { color: var(--medium); background: #fef3c7; }
+  .Hard { color: var(--hard); background: #fee2e2; }
+  .topic {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .leetcode {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .leetcode:hover { text-decoration: underline; }
+  .check {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 28px;
+  }
+  @media (max-width: 700px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>JavaScript DSA Interview Tracker</h1>
+    <p class="subtitle">4–7 YOE • JavaScript / Node.js / MERN interview preparation</p>
+    <div class="stats">
+      <div class="stat"><strong id="total">0</strong><span>Total Questions</span></div>
+      <div class="stat"><strong id="completed">0</strong><span>Completed</span></div>
+      <div class="stat"><strong id="remaining">0</strong><span>Remaining</span></div>
+      <div class="stat"><strong id="progress">0%</strong><span>Progress</span></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input id="search" type="search" placeholder="Search questions...">
+    <select id="topicFilter"><option value="">All Topics</option></select>
+    <select id="difficultyFilter">
+      <option value="">All Difficulties</option>
+      <option value="Easy">Easy</option>
+      <option value="Medium">Medium</option>
+      <option value="Hard">Hard</option>
+    </select>
+    <select id="statusFilter">
+      <option value="">All Status</option>
+      <option value="done">Completed</option>
+      <option value="pending">Pending</option>
+    </select>
+    <button class="reset" id="reset">Reset Progress</button>
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<script>
+const questions = [
+  // Arrays & Strings
+  ["Find the second largest element in an array", "Arrays & Strings", "Easy", "second-largest-element"],
+  ["Remove duplicates from an array without using Set", "Arrays & Strings", "Easy", "remove-duplicates-from-sorted-array"],
+  ["Find duplicate elements in an array", "Arrays & Strings", "Easy", "find-all-duplicates-in-an-array"],
+  ["Find the missing number from 1 to N", "Arrays & Strings", "Easy", "missing-number"],
+  ["Find the intersection of two arrays", "Arrays & Strings", "Easy", "intersection-of-two-arrays"],
+  ["Find the union of two arrays", "Arrays & Strings", "Easy", ""],
+  ["Move all zeroes to the end", "Arrays & Strings", "Easy", "move-zeroes"],
+  ["Rotate an array by K positions", "Arrays & Strings", "Medium", "rotate-array"],
+  ["Find the maximum and minimum element", "Arrays & Strings", "Easy", ""],
+  ["Find the maximum subarray sum — Kadane's Algorithm", "Arrays & Strings", "Medium", "maximum-subarray"],
+  ["Two Sum", "Arrays & Strings", "Easy", "two-sum"],
+  ["Three Sum", "Arrays & Strings", "Medium", "3sum"],
+  ["Find the first non-repeating character", "Arrays & Strings", "Easy", "first-unique-character-in-a-string"],
+  ["Find the first repeating character", "Arrays & Strings", "Easy", ""],
+  ["Check whether two strings are anagrams", "Arrays & Strings", "Easy", "valid-anagram"],
+  ["Check whether a string is a palindrome", "Arrays & Strings", "Easy", "valid-palindrome"],
+  ["Reverse a string without using reverse()", "Arrays & Strings", "Easy", "reverse-string"],
+  ["Reverse words in a sentence", "Arrays & Strings", "Medium", "reverse-words-in-a-string-iii"],
+  ["Find the longest word in a sentence", "Arrays & Strings", "Easy", ""],
+  ["Longest substring without repeating characters", "Arrays & Strings", "Medium", "longest-substring-without-repeating-characters"],
+
+  // HashMap / Objects
+  ["Count frequency of elements in an array", "HashMap / Objects", "Easy", ""],
+  ["Find the most frequent element", "HashMap / Objects", "Easy", ""],
+  ["Group anagrams", "HashMap / Objects", "Medium", "group-anagrams"],
+  ["Find elements occurring more than once", "HashMap / Objects", "Easy", "contains-duplicate"],
+  ["Find the character with maximum frequency", "HashMap / Objects", "Easy", ""],
+  ["Convert an array into an object based on a property", "HashMap / Objects", "Easy", ""],
+  ["Group objects based on a property", "HashMap / Objects", "Medium", ""],
+
+  // Two Pointer / Sliding Window
+  ["Find pair with a given difference", "Two Pointer / Sliding Window", "Easy", "k-diff-pairs-in-an-array"],
+  ["Remove duplicates from a sorted array", "Two Pointer / Sliding Window", "Easy", "remove-duplicates-from-sorted-array"],
+  ["Reverse an array using two pointers", "Two Pointer / Sliding Window", "Easy", ""],
+  ["Maximum sum subarray of size K", "Two Pointer / Sliding Window", "Medium", "maximum-average-subarray-i"],
+  ["Smallest subarray with sum ≥ target", "Two Pointer / Sliding Window", "Medium", "minimum-size-subarray-sum"],
+  ["Longest substring containing at most K distinct characters", "Two Pointer / Sliding Window", "Medium", "longest-substring-with-at-most-k-distinct-characters"],
+
+  // Stack & Queue
+  ["Implement a stack using an array", "Stack & Queue", "Easy", ""],
+  ["Implement a queue using an array", "Stack & Queue", "Easy", ""],
+  ["Check balanced parentheses", "Stack & Queue", "Easy", "valid-parentheses"],
+  ["Implement stack using queues", "Stack & Queue", "Easy", "implement-stack-using-queues"],
+  ["Implement queue using stacks", "Stack & Queue", "Easy", "implement-queue-using-stacks"],
+  ["Find the next greater element", "Stack & Queue", "Medium", "next-greater-element-i"],
+  ["Evaluate a postfix expression", "Stack & Queue", "Medium", "evaluate-reverse-polish-notation"],
+  ["Min Stack — return minimum in O(1)", "Stack & Queue", "Medium", "min-stack"],
+
+  // Linked List
+  ["Reverse a linked list", "Linked List", "Easy", "reverse-linked-list"],
+  ["Find the middle of a linked list", "Linked List", "Easy", "middle-of-the-linked-list"],
+  ["Detect a cycle in a linked list", "Linked List", "Easy", "linked-list-cycle"],
+  ["Find the starting point of a cycle", "Linked List", "Medium", "linked-list-cycle-ii"],
+  ["Find the nth node from the end", "Linked List", "Medium", "remove-nth-node-from-end-of-list"],
+  ["Merge two sorted linked lists", "Linked List", "Easy", "merge-two-sorted-lists"],
+  ["Remove duplicates from a linked list", "Linked List", "Easy", "remove-duplicates-from-sorted-list"],
+  ["Check whether a linked list is a palindrome", "Linked List", "Easy", "palindrome-linked-list"],
+  ["Find intersection point of two linked lists", "Linked List", "Easy", "intersection-of-two-linked-lists"],
+  ["Reverse linked list in groups of K", "Linked List", "Hard", "reverse-nodes-in-k-group"],
+
+  // Recursion
+  ["Factorial using recursion", "Recursion", "Easy", ""],
+  ["Fibonacci using recursion", "Recursion", "Easy", "fibonacci-number"],
+  ["Reverse a string using recursion", "Recursion", "Easy", ""],
+  ["Flatten a nested array", "Recursion", "Medium", "flatten-deeply-nested-array"],
+  ["Generate all permutations of a string", "Recursion", "Medium", "permutations"],
+  ["Generate all subsets of an array", "Recursion", "Medium", "subsets"],
+
+  // Sorting & Searching
+  ["Implement Binary Search", "Sorting & Searching", "Easy", "binary-search"],
+  ["Find first occurrence of an element", "Sorting & Searching", "Medium", "find-first-and-last-position-of-element-in-sorted-array"],
+  ["Find last occurrence of an element", "Sorting & Searching", "Medium", "find-first-and-last-position-of-element-in-sorted-array"],
+  ["Find position to insert an element", "Sorting & Searching", "Easy", "search-insert-position"],
+  ["Find peak element", "Sorting & Searching", "Medium", "find-peak-element"],
+  ["Search in a rotated sorted array", "Sorting & Searching", "Medium", "search-in-rotated-sorted-array"],
+  ["Implement Bubble Sort", "Sorting & Searching", "Easy", ""],
+  ["Implement Selection Sort", "Sorting & Searching", "Easy", ""],
+  ["Implement Insertion Sort", "Sorting & Searching", "Easy", ""],
+  ["Explain / implement Merge Sort", "Sorting & Searching", "Medium", ""],
+  ["Explain / implement Quick Sort", "Sorting & Searching", "Medium", ""],
+
+  // Trees
+  ["Binary tree: Inorder traversal", "Trees", "Easy", "binary-tree-inorder-traversal"],
+  ["Binary tree: Preorder traversal", "Trees", "Easy", "binary-tree-preorder-traversal"],
+  ["Binary tree: Postorder traversal", "Trees", "Easy", "binary-tree-postorder-traversal"],
+  ["Binary tree: Level order traversal", "Trees", "Medium", "binary-tree-level-order-traversal"],
+  ["Find height / maximum depth of a binary tree", "Trees", "Easy", "maximum-depth-of-binary-tree"],
+  ["Count nodes in a binary tree", "Trees", "Easy", "count-complete-tree-nodes"],
+  ["Find maximum value in a binary tree", "Trees", "Easy", ""],
+  ["Check whether two trees are identical", "Trees", "Easy", "same-tree"],
+  ["Check whether a tree is balanced", "Trees", "Easy", "balanced-binary-tree"],
+  ["Find Lowest Common Ancestor", "Trees", "Medium", "lowest-common-ancestor-of-a-binary-tree"],
+  ["Invert a binary tree", "Trees", "Easy", "invert-binary-tree"],
+  ["Find diameter of a binary tree", "Trees", "Medium", "diameter-of-binary-tree"],
+  ["Validate a Binary Search Tree", "Trees", "Medium", "validate-binary-search-tree"],
+
+  // JavaScript Specific
+  ["Implement Array.prototype.map()", "JavaScript Specific", "Medium", ""],
+  ["Implement Array.prototype.filter()", "JavaScript Specific", "Medium", ""],
+  ["Implement Array.prototype.reduce()", "JavaScript Specific", "Medium", ""],
+  ["Implement Array.prototype.forEach()", "JavaScript Specific", "Easy", ""],
+  ["Implement Promise.all()", "JavaScript Specific", "Medium", ""],
+  ["Implement Promise.race()", "JavaScript Specific", "Medium", ""],
+  ["Implement debounce", "JavaScript Specific", "Medium", ""],
+  ["Implement throttle", "JavaScript Specific", "Medium", ""],
+  ["Implement memoization", "JavaScript Specific", "Medium", ""],
+  ["Implement deep clone", "JavaScript Specific", "Medium", ""],
+  ["Flatten an array", "JavaScript Specific", "Easy", ""],
+  ["Implement an LRU Cache", "JavaScript Specific", "Medium", "lru-cache"],
+  ["Implement a custom EventEmitter", "JavaScript Specific", "Medium", ""],
+  ["Group / transform large datasets efficiently", "JavaScript Specific", "Medium", ""]
+];
+
+const stateKey = "jsDsaInterviewProgress_v1";
+let completed = JSON.parse(localStorage.getItem(stateKey) || "{}");
+
+const content = document.getElementById("content");
+const search = document.getElementById("search");
+const topicFilter = document.getElementById("topicFilter");
+const difficultyFilter = document.getElementById("difficultyFilter");
+const statusFilter = document.getElementById("statusFilter");
+
+const topics = [...new Set(questions.map(q => q[1]))];
+topics.forEach(topic => {
+  const option = document.createElement("option");
+  option.value = topic;
+  option.textContent = topic;
+  topicFilter.appendChild(option);
+});
+
+function leetcodeUrl(slug) {
+  return slug ? `https://leetcode.com/problems/${slug}/` : `https://leetcode.com/problemset/`;
+}
+
+function save() {
+  localStorage.setItem(stateKey, JSON.stringify(completed));
+}
+
+function updateStats() {
+  const total = questions.length;
+  const done = Object.values(completed).filter(Boolean).length;
+  document.getElementById("total").textContent = total;
+  document.getElementById("completed").textContent = done;
+  document.getElementById("remaining").textContent = total - done;
+  document.getElementById("progress").textContent = `${Math.round(done / total * 100)}%`;
+}
+
+function render() {
+  const q = search.value.toLowerCase().trim();
+  const topic = topicFilter.value;
+  const difficulty = difficultyFilter.value;
+  const status = statusFilter.value;
+
+  const filtered = questions.map((item, index) => ({ item, index }))
+    .filter(({item, index}) => {
+      const [question, t, d] = item;
+      const matchesSearch = question.toLowerCase().includes(q) || t.toLowerCase().includes(q);
+      const matchesTopic = !topic || t === topic;
+      const matchesDifficulty = !difficulty || d === difficulty;
+      const isDone = !!completed[index];
+      const matchesStatus = !status || (status === "done" ? isDone : !isDone);
+      return matchesSearch && matchesTopic && matchesDifficulty && matchesStatus;
+    });
+
+  const groups = {};
+  filtered.forEach(({item, index}) => {
+    if (!groups[item[1]]) groups[item[1]] = [];
+    groups[item[1]].push({item, index});
+  });
+
+  if (!filtered.length) {
+    content.innerHTML = '<div class="table-wrap"><div class="empty">No questions found.</div></div>';
+    return;
+  }
+
+  content.innerHTML = Object.entries(groups).map(([topic, rows]) => `
+    <h2 class="section">${topic}</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:60px">Done</th>
+            <th>Question</th>
+            <th>Difficulty</th>
+            <th>LeetCode</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(({item, index}) => `
+            <tr class="${completed[index] ? "done" : ""}">
+              <td>
+                <input class="check" type="checkbox" data-index="${index}" ${completed[index] ? "checked" : ""}>
+              </td>
+              <td>
+                <div class="question">${item[0]}</div>
+                <div class="topic">${item[1]}</div>
+              </td>
+              <td><span class="difficulty ${item[2]}">${item[2]}</span></td>
+              <td><a class="leetcode" href="${leetcodeUrl(item[3])}" target="_blank" rel="noopener noreferrer">Open ↗</a></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".check").forEach(cb => {
+    cb.addEventListener("change", e => {
+      completed[e.target.dataset.index] = e.target.checked;
+      save();
+      updateStats();
+      render();
+    });
+  });
+}
+
+[search, topicFilter, difficultyFilter, statusFilter].forEach(el =>
+  el.addEventListener("input", render)
+);
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Reset all completed questions?")) {
+    completed = {};
+    save();
+    updateStats();
+    render();
+  }
+});
+
+updateStats();
+render();
+</script>
+</body>
+</html>
